@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17141F">
+<meta name="robots" content="noindex">
+<title>Тест вібрації — Поясни слово</title>
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#17141F;color:#ECE8F2;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:520px;margin:0 auto;padding:28px 18px 48px}
+h1{font-size:26px;line-height:1.2;margin:0 0 6px}
+p{color:#A59DB6;margin:0 0 14px}
+h2{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#8C84A0;margin:26px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+button{font:800 16px system-ui,sans-serif;min-height:64px;border-radius:18px;border:2px solid #322C42;background:#221E2D;color:#ECE8F2;cursor:pointer;padding:8px}
+button small{display:block;font-weight:600;font-size:12px;color:#8C84A0;margin-top:2px}
+button.now{border-color:#E9C46A}
+button:active{background:#2E2840;transform:scale(.98)}
+button:focus-visible{outline:3px solid #E9C46A;outline-offset:2px}
+.status{margin-top:22px;padding:14px 16px;border-radius:16px;background:#221E2D;border:1px solid #322C42;color:#ECE8F2;min-height:52px}
+.warn{color:#E07A5F}
+</style>
+</head>
+<body>
+<main>
+<h1>Тест вібрації</h1>
+<p>Відкрий у Chrome на Android і натискай кнопки. Запам'ятай найкоротший імпульс, який чітко відчуваєш, і який здається приємним для свайпу. Жовта рамка — те, що зараз у грі.</p>
+
+<h2>Один імпульс</h2>
+<div class="grid" id="single"></div>
+
+<h2>Подвійний</h2>
+<div class="grid two" id="double"></div>
+
+<h2>Кінець часу</h2>
+<div class="grid two" id="end"></div>
+
+<div class="status" id="status" aria-live="polite">Натисни будь-яку кнопку.</div>
+</main>
+<script>
+{
+  const single = [[20],[30,'зараз: пропуск'],[50,'зараз: вгадали'],[70],[90],[120],[150],[200],[300]];
+  const double = [[[40,60,40]],[[60,80,60]],[[80,100,80]],[[100,100,100]]];
+  const end = [[[300,150,300],'зараз у грі'],[[400,150,400]],[[500,200,500]],[[200,100,200,100,600]]];
+  const label = (p) => p.length === 1 ? `${p[0]} мс` : p.join('·');
+  const status = document.getElementById('status');
+  const can = 'vibrate' in navigator;
+  if (!can) status.innerHTML = '<span class="warn">Цей браузер не підтримує вібрацію. Відкрий сторінку в Chrome на Android.</span>';
+  const add = (id, list) => {
+    const box = document.getElementById(id);
+    for (const [p, note] of list) {
+      const pat = Array.isArray(p) ? p : [p];
+      const b = document.createElement('button');
+      b.type = 'button';
+      if (note) b.className = 'now';
+      b.innerHTML = label(pat) + (note ? `<small>${note}</small>` : '');
+      b.addEventListener('click', () => {
+        if (!can) return;
+        const ok = navigator.vibrate(pat.length === 1 ? pat[0] : pat);
+        status.textContent = ok ? `Вібрую: ${label(pat)}` : 'Браузер відмовив у вібрації (енергозбереження чи налаштування телефона?)';
+      });
+      box.appendChild(b);
+    }
+  };
+  add('single', single.map(([ms, n]) => [[ms], n]));
+  add('double', double);
+  add('end', end);
+}
+</script>
+</body>
+</html>
